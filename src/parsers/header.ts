@@ -28,8 +28,8 @@ const SubHeaderV0 = new Parser()
 */
 
 const DataBlock = new Parser()
-    .int16le('blockSize')
-    .int16le('blockDecompressedSize')
+    .int32le('blockSize')
+    .int32le('blockDecompressedSize')
     .string('unknown', { encoding: 'hex', length: 4 })
     .buffer('compressed', { length: 'blockSize' })
 
