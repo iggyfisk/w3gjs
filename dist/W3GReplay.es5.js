@@ -3640,7 +3640,9 @@ var ChangeAllyOptionsAction = new binary_parser_1()
     .int8('slotNumber')
     .int32le('flags');
 var TransferResourcesAction = new binary_parser_1()
-    .skip(9);
+    .int8('slotNumber')
+    .int32le('gold')
+    .int32le('lumber');
 var MapTriggerChatAction = new binary_parser_1()
     .skip(8)
     .string('action', { zeroTerminated: true });

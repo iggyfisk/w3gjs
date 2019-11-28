@@ -187,7 +187,9 @@ const ChangeAllyOptionsAction = new Parser()
     .int32le('flags')
 
 const TransferResourcesAction = new Parser()
-    .skip(9)
+    .int8('slotNumber')
+    .int32le('gold')
+    .int32le('lumber');
 
 const MapTriggerChatAction = new Parser()
     .skip(8)
@@ -287,7 +289,7 @@ const ActionBlock = new Parser()
     })
 
 const ActionBlockList = new Parser()
-// @ts-ignore
+    // @ts-ignore
     .array(null, { type: ActionBlock, readUntil: 'eof' })
 
 // 0x17
