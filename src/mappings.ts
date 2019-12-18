@@ -237,7 +237,8 @@ const items: { [key: string]: string } = {
     kgal: 'i_Keg of Ale',
     dphe: 'i_Thunder Phoenix Egg',
     dkfw: 'i_Keg of Thunderwater',
-    dthb: 'i_Thunderbloom Bulb'
+    dthb: 'i_Thunderbloom Bulb',
+    ritd: 'i_Ritual Dagger'
 }
 
 const units: { [key: string]: string } = {
@@ -471,6 +472,7 @@ const upgrades: { [key: string]: string } = {
     Rhfc: 'p_Flak Cannons',
     Rhfs: 'p_Fragmentation Shards',
     Rhcd: 'p_Cloud',
+    Rhsb: 'p_Sundering Blades',
     Resm: 'p_Strength of the Moon',
     Resw: 'p_Strength of the Wild',
     Rema: 'p_Moon Armor',
