@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import Player from './Player';
 import ReplayParser from './ReplayParser';
 import { GameMetaDataDecoded, GameDataBlock, ActionBlock, TimeSlotBlock, CommandDataBlock, ParserOutput } from './types';
@@ -24,7 +25,7 @@ declare class W3GReplay extends ReplayParser {
     matchup: string;
     parseStartTime: number;
     constructor();
-    parse($buffer: string): ParserOutput;
+    parse($buffer: string | Buffer): ParserOutput;
     handleMetaData(metaData: GameMetaDataDecoded): void;
     processGameDataBlock(block: GameDataBlock): void;
     handleTimeSlot(block: TimeSlotBlock): void;

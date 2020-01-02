@@ -9,7 +9,7 @@ declare class ReplayParser extends EventEmitter {
     decompressed: Buffer;
     gameMetaDataDecoded: any;
     constructor();
-    parse($buffer: string): void;
+    parse($buffer: string | Buffer): void;
     _parseHeader(): void;
     _parseGameDataBlocks(): void;
     _processGameDataBlock(block: GameDataBlock): void;

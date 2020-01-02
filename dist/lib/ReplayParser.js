@@ -48,9 +48,9 @@ var ReplayParser = /** @class */ (function (_super) {
     }
     ReplayParser.prototype.parse = function ($buffer) {
         this.msElapsed = 0;
-        this.buffer = readFileSync($buffer);
+        this.buffer = Buffer.isBuffer($buffer) ? $buffer : readFileSync($buffer);
         this.buffer = this.buffer.slice(this.buffer.indexOf('Warcraft III recorded game'));
-        this.filename = $buffer;
+        this.filename = Buffer.isBuffer($buffer) ? 'buffer' : $buffer;
         var decompressed = [];
         this._parseHeader();
         this.header.blocks.forEach(function (block) {

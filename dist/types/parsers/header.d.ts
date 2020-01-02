@@ -1,16 +1,14 @@
 /// <reference types="node" />
 import { Parser } from 'binary-parser';
-declare const DataBlock: Parser<{
+declare const DataBlock: Parser.Next<{
     blockSize: number;
 } & {
     blockDecompressedSize: number;
 } & {
     unknown: string;
-} & {
-    compressed: Buffer;
-}>;
+}, "compressed", Buffer>;
 declare const ReplayHeader: any;
-declare const GameMetaData: Parser<{
+declare const GameMetaData: Parser.Next<{
     player: {
         playerId: number;
     } & {
@@ -64,10 +62,8 @@ declare const GameMetaData: Parser<{
     randomSeed: number;
 } & {
     selectMode: string;
-} & {
-    startSpotCount: number;
-}>;
-declare const EncodedMapMetaString: Parser<{
+}, "startSpotCount", number>;
+declare const EncodedMapMetaString: Parser.Next<{
     speed: number;
 } & {
     hideTerrain: number;
@@ -97,7 +93,5 @@ declare const EncodedMapMetaString: Parser<{
     mapChecksum: string;
 } & {
     mapName: string;
-} & {
-    creator: string;
-}>;
+}, "creator", string>;
 export { ReplayHeader, EncodedMapMetaString, GameMetaData, DataBlock };

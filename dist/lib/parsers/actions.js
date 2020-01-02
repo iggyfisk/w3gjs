@@ -252,7 +252,8 @@ var ActionBlock = new binary_parser_1.Parser()
         0x6c: new binary_parser_1.Parser(),
         0x6d: new binary_parser_1.Parser(),
         0x75: UnknownAction75,
-        0x7B: UnknownAction7B
+        0x7B: UnknownAction7B,
+        0x7a: new binary_parser_1.Parser().skip(20)
     }
 });
 var ActionBlockList = new binary_parser_1.Parser()
