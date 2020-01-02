@@ -284,7 +284,8 @@ const ActionBlock = new Parser()
             0x6c: new Parser(),
             0x6d: new Parser(),
             0x75: UnknownAction75,
-            0x7B: UnknownAction7B
+            0x7B: UnknownAction7B,
+            0x7a: new Parser().skip(20)
         }
     })
 

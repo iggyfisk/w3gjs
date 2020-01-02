@@ -2,6 +2,56 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.5.1"></a>
+## [1.5.1](https://github.com/PBug90/w3gjs/compare/v1.5.0...v1.5.1) (2020-01-02)
+
+
+### Bug Fixes
+
+* corrections to playerColor values ([#36](https://github.com/PBug90/w3gjs/issues/36)) ([0e08b96](https://github.com/PBug90/w3gjs/commit/0e08b96))
+
+
+
+<a name="1.5.0"></a>
+# [1.5.0](https://github.com/PBug90/w3gjs/compare/v1.4.1...v1.5.0) (2019-12-05)
+
+
+### Features
+
+* parse but skip 0x7a actions ([#34](https://github.com/PBug90/w3gjs/issues/34)) ([bfe1980](https://github.com/PBug90/w3gjs/commit/bfe1980))
+
+
+
+<a name="1.4.1"></a>
+## [1.4.1](https://github.com/PBug90/w3gjs/compare/v1.4.0...v1.4.1) (2019-11-30)
+
+
+
+<a name="1.4.0"></a>
+# [1.4.0](https://github.com/PBug90/w3gjs/compare/v1.3.0...v1.4.0) (2019-11-30)
+
+
+### Features
+
+* allow buffer as input ([#31](https://github.com/PBug90/w3gjs/issues/31)) ([edef518](https://github.com/PBug90/w3gjs/commit/edef518))
+
+
+
+<a name="1.3.0"></a>
+# [1.3.0](https://github.com/PBug90/w3gjs/compare/v1.2.0...v1.3.0) (2019-08-28)
+
+
+### Bug Fixes
+
+* properly converts maps with backslash and/or forward slash ([a143318](https://github.com/PBug90/w3gjs/commit/a143318))
+
+
+### Features
+
+* track parse time and added it to parser output ([e06bfb2](https://github.com/PBug90/w3gjs/commit/e06bfb2))
+
+
+
 <a name="1.2.0"></a>
 # [1.2.0](https://github.com/anXieTyPB/w3gjs/compare/v1.1.3...v1.2.0) (2019-08-22)
 

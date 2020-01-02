@@ -1,5 +1,6 @@
 import W3GReplay from '../src/W3GReplay'
 import { Validator } from 'jsonschema'
+import { readFileSync } from 'fs'
 
 const Parser = new W3GReplay()
 
@@ -12,7 +13,7 @@ describe('Replay parsing tests', () => {
         expect(test.players[1].raceDetected).toBe('O')
         expect(test.players[1].id).toBe(4)
         expect(test.players[1].teamid).toBe(3)
-        expect(test.players[1].color).toBe('#50c878')
+        expect(test.players[1].color).toBe('#00781e')
         expect(test.players[1].units.summary).toEqual({
             opeo: 10, ogru: 5, ostr: 1, orai: 6, ospm: 5, okod: 2
         })
@@ -33,7 +34,7 @@ describe('Replay parsing tests', () => {
 
         expect(test.players[0].name).toBe('Stormhoof')
         expect(test.players[0].raceDetected).toBe('O')
-        expect(test.players[0].color).toBe('#800000')
+        expect(test.players[0].color).toBe('#9b0000')
         expect(test.players[0].id).toBe(6)
         expect(test.players[0].teamid).toBe(0)
         expect(test.players[0].units.summary).toEqual({
@@ -73,10 +74,10 @@ describe('Replay parsing tests', () => {
         expect(test.observers.length).toBe(8)
         expect(test.players[1].name).toBe('Happy_')
         expect(test.players[1].raceDetected).toBe('U')
-        expect(test.players[1].color).toBe('#0000FF')
+        expect(test.players[1].color).toBe('#0042ff')
         expect(test.players[0].name).toBe('u2.sok')
         expect(test.players[0].raceDetected).toBe('H')
-        expect(test.players[0].color).toBe('#ff0000')
+        expect(test.players[0].color).toBe('#ff0303')
         expect(test.matchup).toBe('HvU')
         expect(test.type).toBe('1on1')
         expect(test.players.length).toBe(2)
@@ -92,7 +93,7 @@ describe('Replay parsing tests', () => {
         expect(test.version).toBe('1.29')
 
         expect(test.players[1].name).toBe('rudan')
-        expect(test.players[1].color).toBe('#3eb489')
+        expect(test.players[1].color).toBe('#282828')
         expect(test.observers.length).toBe(1)
         expect(test.matchup).toBe('NvN')
         expect(test.type).toBe('1on1')
@@ -181,6 +182,13 @@ describe('Replay parsing tests', () => {
         expect(test.players.length).toBe(2)
     })
 
+    it('parses a standard 1.30.4 replay properly as buffer', () => {
+        const buffer: Buffer = readFileSync('./replays/standard_1304.w3g')
+        const test = Parser.parse(buffer)
+        expect(test.version).toBe('1.30.2+')
+        expect(test.players.length).toBe(2)
+    })
+
     it('parses a standard 1.30.4 2on2 replay properly', () => {
         const test = Parser.parse('./replays/standard_1304.2on2.w3g')
         expect(test.version).toBe('1.30.2+')
@@ -254,5 +262,11 @@ describe('Replay parsing tests', () => {
                 }
             ]
         })
+    })
+
+    it('parses a replay with action 0x7a successfully', () => {
+        const test = Parser.parse('./replays/action0x7a.w3g')
+        expect(test.version).toBe('1.31')
+        expect(test.players.length).toBe(1)
     })
 })
