@@ -63,6 +63,81 @@ declare const GameMetaData: Parser.Next<{
 } & {
     selectMode: string;
 }, "startSpotCount", number>;
+declare const GameMetaDataReforged: Parser.Next<{
+    player: {
+        playerId: number;
+    } & {
+        playerName: string;
+    } & {
+        addDataFlagHost: number;
+    } & {
+        additional: {} | ({
+            runtimeMS: string;
+        } & {
+            raceFlags: number;
+        });
+    };
+} & {
+    gameName: string;
+} & {
+    encodedString: string;
+} & {
+    playerCount: number;
+} & {
+    gameType: string;
+} & {
+    languageId: string;
+} & {
+    playerList: {}[] | number[] | object[];
+} & {
+    extraPlayerList: ({
+        preVars1: number;
+    } & {
+        pre: Buffer;
+    } & {
+        nameLength: number;
+    } & {
+        name: string;
+    } & {
+        clanLength: number;
+    } & {
+        clan: string;
+    } & {
+        extraLength: number;
+    } & {
+        extra: Buffer;
+    } & {
+        post: Buffer;
+    })[];
+} & {
+    gameStartRecord: number;
+} & {
+    dataByteCount: number;
+} & {
+    slotRecordCount: number;
+} & {
+    playerSlotRecords: ({
+        playerId: number;
+    } & {
+        slotStatus: number;
+    } & {
+        computerFlag: number;
+    } & {
+        teamId: number;
+    } & {
+        color: number;
+    } & {
+        raceFlag: number;
+    } & {
+        aiStrength: number;
+    } & {
+        handicapFlag: number;
+    })[];
+} & {
+    randomSeed: number;
+} & {
+    selectMode: string;
+}, "startSpotCount", number>;
 declare const EncodedMapMetaString: Parser.Next<{
     speed: number;
 } & {
@@ -94,4 +169,4 @@ declare const EncodedMapMetaString: Parser.Next<{
 } & {
     mapName: string;
 }, "creator", string>;
-export { ReplayHeader, EncodedMapMetaString, GameMetaData, DataBlock };
+export { ReplayHeader, EncodedMapMetaString, GameMetaData, GameMetaDataReforged, DataBlock };

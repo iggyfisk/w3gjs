@@ -118,6 +118,61 @@ var GameMetaData = new binary_parser_1.Parser()
     .string('selectMode', { length: 1, encoding: 'hex' })
     .int8('startSpotCount');
 exports.GameMetaData = GameMetaData;
+var GameMetaDataReforged = new binary_parser_1.Parser()
+    .skip(5)
+    .nest('player', { type: HostRecord })
+    .string('gameName', { zeroTerminated: true })
+    .skip(1)
+    .string('encodedString', { zeroTerminated: true, encoding: 'hex' })
+    .int32le('playerCount')
+    .string('gameType', { length: 4, encoding: 'hex' })
+    .string('languageId', { length: 4, encoding: 'hex' })
+    .array('playerList', {
+    type: new binary_parser_1.Parser()
+        .int8('hasRecord')
+        // @ts-ignore
+        .choice(null, {
+        tag: 'hasRecord',
+        choices: {
+            22: PlayerRecordInList
+        },
+        defaultChoice: new binary_parser_1.Parser().skip(-1)
+    }),
+    readUntil: function (item, buffer) {
+        // @ts-ignore
+        var next = buffer.readInt8();
+        return next === 57;
+    }
+})
+    .skip(4) // GamestartRecord etc used to go here
+    .skip(8) // More stuff that happens before the next list of players
+    .array('extraPlayerList', {
+    type: new binary_parser_1.Parser()
+        .int8('preVars1')
+        .buffer('pre', { length: 4 })
+        .int8('nameLength')
+        .string('name', { length: 'nameLength' })
+        .skip(1)
+        .int8('clanLength')
+        .string('clan', { length: 'clanLength' })
+        .skip(1)
+        .int8('extraLength')
+        .buffer('extra', { length: 'extraLength' })
+        .buffer('post', { length: 2 }),
+    readUntil: function (item, buffer) {
+        // @ts-ignore
+        var next = buffer.readInt8();
+        return next === 25;
+    }
+})
+    .int8('gameStartRecord')
+    .int16('dataByteCount')
+    .int8('slotRecordCount')
+    .array('playerSlotRecords', { type: PlayerSlotRecord, length: 'slotRecordCount' })
+    .int32le('randomSeed')
+    .string('selectMode', { length: 1, encoding: 'hex' })
+    .int8('startSpotCount');
+exports.GameMetaDataReforged = GameMetaDataReforged;
 var EncodedMapMetaString = new binary_parser_1.Parser()
     .uint8('speed')
     .bit1('hideTerrain')

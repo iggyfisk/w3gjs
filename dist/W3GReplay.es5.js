@@ -4787,6 +4787,60 @@ var GameMetaData = new binary_parser_1()
     .int32le('randomSeed')
     .string('selectMode', { length: 1, encoding: 'hex' })
     .int8('startSpotCount');
+var GameMetaDataReforged = new binary_parser_1()
+    .skip(5)
+    .nest('player', { type: HostRecord })
+    .string('gameName', { zeroTerminated: true })
+    .skip(1)
+    .string('encodedString', { zeroTerminated: true, encoding: 'hex' })
+    .int32le('playerCount')
+    .string('gameType', { length: 4, encoding: 'hex' })
+    .string('languageId', { length: 4, encoding: 'hex' })
+    .array('playerList', {
+    type: new binary_parser_1()
+        .int8('hasRecord')
+        // @ts-ignore
+        .choice(null, {
+        tag: 'hasRecord',
+        choices: {
+            22: PlayerRecordInList
+        },
+        defaultChoice: new binary_parser_1().skip(-1)
+    }),
+    readUntil: function (item, buffer) {
+        // @ts-ignore
+        var next = buffer.readInt8();
+        return next === 57;
+    }
+})
+    .skip(4) // GamestartRecord etc used to go here
+    .skip(8) // More stuff that happens before the next list of players
+    .array('extraPlayerList', {
+    type: new binary_parser_1()
+        .int8('preVars1')
+        .buffer('pre', { length: 4 })
+        .int8('nameLength')
+        .string('name', { length: 'nameLength' })
+        .skip(1)
+        .int8('clanLength')
+        .string('clan', { length: 'clanLength' })
+        .skip(1)
+        .int8('extraLength')
+        .buffer('extra', { length: 'extraLength' })
+        .buffer('post', { length: 2 }),
+    readUntil: function (item, buffer) {
+        // @ts-ignore
+        var next = buffer.readInt8();
+        return next === 25;
+    }
+})
+    .int8('gameStartRecord')
+    .int16('dataByteCount')
+    .int8('slotRecordCount')
+    .array('playerSlotRecords', { type: PlayerSlotRecord, length: 'slotRecordCount' })
+    .int32le('randomSeed')
+    .string('selectMode', { length: 1, encoding: 'hex' })
+    .int8('startSpotCount');
 var EncodedMapMetaString = new binary_parser_1()
     .uint8('speed')
     .bit1('hideTerrain')
@@ -4895,6 +4949,9 @@ var _a = require('zlib'), inflateSync = _a.inflateSync, constants = _a.constants
 var GameDataParserComposed = new binary_parser_1()
     .nest('meta', { type: GameMetaData })
     .nest('blocks', { type: GameDataParser });
+var GameDataReforgedParserComposed = new binary_parser_1()
+    .nest('meta', { type: GameMetaDataReforged })
+    .nest('blocks', { type: GameDataParser });
 var EventEmitter = require('events');
 var ReplayParser = /** @class */ (function (_super) {
     __extends(ReplayParser, _super);
@@ -4927,7 +4984,9 @@ var ReplayParser = /** @class */ (function (_super) {
             }
         });
         this.decompressed = Buffer.concat(decompressed);
-        this.gameMetaDataDecoded = GameDataParserComposed.parse(this.decompressed);
+        this.gameMetaDataDecoded = this.header.buildNo >= 6102
+            ? GameDataReforgedParserComposed.parse(this.decompressed)
+            : GameDataParserComposed.parse(this.decompressed);
         var decodedMetaStringBuffer = this.decodeGameMetaString(this.gameMetaDataDecoded.meta.encodedString);
         var meta = __assign(__assign(__assign({}, this.gameMetaDataDecoded), this.gameMetaDataDecoded.meta), EncodedMapMetaString.parse(decodedMetaStringBuffer));
         var newMeta = meta;

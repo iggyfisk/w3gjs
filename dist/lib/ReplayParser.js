@@ -35,6 +35,9 @@ var _a = require('zlib'), inflateSync = _a.inflateSync, constants = _a.constants
 var GameDataParserComposed = new binary_parser_1.Parser()
     .nest('meta', { type: header_1.GameMetaData })
     .nest('blocks', { type: gamedata_1.GameDataParser });
+var GameDataReforgedParserComposed = new binary_parser_1.Parser()
+    .nest('meta', { type: header_1.GameMetaDataReforged })
+    .nest('blocks', { type: gamedata_1.GameDataParser });
 var EventEmitter = require('events');
 var ReplayParser = /** @class */ (function (_super) {
     __extends(ReplayParser, _super);
@@ -67,7 +70,9 @@ var ReplayParser = /** @class */ (function (_super) {
             }
         });
         this.decompressed = Buffer.concat(decompressed);
-        this.gameMetaDataDecoded = GameDataParserComposed.parse(this.decompressed);
+        this.gameMetaDataDecoded = this.header.buildNo >= 6102
+            ? GameDataReforgedParserComposed.parse(this.decompressed)
+            : GameDataParserComposed.parse(this.decompressed);
         var decodedMetaStringBuffer = this.decodeGameMetaString(this.gameMetaDataDecoded.meta.encodedString);
         var meta = __assign(__assign(__assign({}, this.gameMetaDataDecoded), this.gameMetaDataDecoded.meta), header_1.EncodedMapMetaString.parse(decodedMetaStringBuffer));
         var newMeta = meta;
