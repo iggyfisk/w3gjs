@@ -5315,6 +5315,7 @@
                     checksum: this.meta.mapChecksum
                 },
                 version: convert.gameVersion(this.header.version),
+                buildNo: this.header.buildNo,
                 duration: this.header.replayLengthMS,
                 expansion: this.header.gameIdentifier === 'PX3W',
                 settings: settings,

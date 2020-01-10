@@ -278,6 +278,7 @@ var W3GReplay = /** @class */ (function (_super) {
                 checksum: this.meta.mapChecksum
             },
             version: convert_1.default.gameVersion(this.header.version),
+            buildNo: this.header.buildNo,
             duration: this.header.replayLengthMS,
             expansion: this.header.gameIdentifier === 'PX3W',
             settings: settings,
