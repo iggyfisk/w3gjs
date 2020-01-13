@@ -25,6 +25,8 @@ declare const GameMetaData: Parser.Next<{
 } & {
     gameName: string;
 } & {
+    privateString: string;
+} & {
     encodedString: string;
 } & {
     playerCount: number;
@@ -79,6 +81,8 @@ declare const GameMetaDataReforged: Parser.Next<{
     };
 } & {
     gameName: string;
+} & {
+    privateString: string;
 } & {
     encodedString: string;
 } & {

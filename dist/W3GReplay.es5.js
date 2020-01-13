@@ -4758,7 +4758,7 @@ var GameMetaData = new binary_parser_1()
     .skip(5)
     .nest('player', { type: HostRecord })
     .string('gameName', { zeroTerminated: true })
-    .skip(1)
+    .string('privateString', { zeroTerminated: true })
     .string('encodedString', { zeroTerminated: true, encoding: 'hex' })
     .int32le('playerCount')
     .string('gameType', { length: 4, encoding: 'hex' })
@@ -4791,7 +4791,7 @@ var GameMetaDataReforged = new binary_parser_1()
     .skip(5)
     .nest('player', { type: HostRecord })
     .string('gameName', { zeroTerminated: true })
-    .skip(1)
+    .string('privateString', { zeroTerminated: true })
     .string('encodedString', { zeroTerminated: true, encoding: 'hex' })
     .int32le('playerCount')
     .string('gameType', { length: 4, encoding: 'hex' })
@@ -5292,6 +5292,7 @@ var W3GReplay = /** @class */ (function (_super) {
         var root = {
             id: this.id,
             gamename: this.meta.gameName,
+            privateString: this.meta.privateString,
             randomseed: this.meta.randomSeed,
             startSpots: this.meta.startSpotCount,
             observers: this.observers,
