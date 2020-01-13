@@ -280,6 +280,7 @@ class W3GReplay extends ReplayParser {
         const root = {
             id: this.id,
             gamename: this.meta.gameName,
+            privateString: this.meta.privateString,
             randomseed: this.meta.randomSeed,
             startSpots: this.meta.startSpotCount,
             observers: this.observers,

@@ -31,6 +31,7 @@ export interface GameMetaDataDecoded {
         };
     };
     gameName: string;
+    privateString: string,
     encodedString: string;
     playerCount: number;
     gameType: string;
@@ -121,6 +122,7 @@ export interface ItemID {
 export interface ParserOutput {
     id: string;
     gamename: GameMetaDataDecoded['gameName'];
+    privateString: GameMetaDataDecoded['privateString'];
     randomseed: GameMetaDataDecoded['randomSeed'];
     startSpots: GameMetaDataDecoded['startSpotCount'];
     observers: string[];
