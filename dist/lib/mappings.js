@@ -240,7 +240,8 @@ var items = {
     dphe: 'i_Thunder Phoenix Egg',
     dkfw: 'i_Keg of Thunderwater',
     dthb: 'i_Thunderbloom Bulb',
-    ritd: 'i_Ritual Dagger'
+    ritd: 'i_Ritual Dagger',
+    ofr2: 'i_Orb of Fire'
 };
 exports.items = items;
 var units = {

@@ -4062,7 +4062,8 @@
         dphe: 'i_Thunder Phoenix Egg',
         dkfw: 'i_Keg of Thunderwater',
         dthb: 'i_Thunderbloom Bulb',
-        ritd: 'i_Ritual Dagger'
+        ritd: 'i_Ritual Dagger',
+        ofr2: 'i_Orb of Fire'
     };
     var units = {
         hfoo: 'u_Footman',
@@ -4793,7 +4794,7 @@
         .int32le('randomSeed')
         .string('selectMode', { length: 1, encoding: 'hex' })
         .int8('startSpotCount');
-    var GameMetaDataReforged = new binary_parser_1()
+    var GameMetaDataReforged = function (buildNo) { return new binary_parser_1()
         .skip(5)
         .nest('player', { type: HostRecord })
         .string('gameName', { zeroTerminated: true })
@@ -4833,7 +4834,7 @@
             .skip(1)
             .int8('extraLength')
             .buffer('extra', { length: 'extraLength' })
-            .buffer('post', { length: 2 }),
+            .buffer('post', { length: buildNo >= 6103 ? 4 : 2 }),
         readUntil: function (item, buffer) {
             // @ts-ignore
             var next = buffer.readInt8();
@@ -4846,7 +4847,7 @@
         .array('playerSlotRecords', { type: PlayerSlotRecord, length: 'slotRecordCount' })
         .int32le('randomSeed')
         .string('selectMode', { length: 1, encoding: 'hex' })
-        .int8('startSpotCount');
+        .int8('startSpotCount'); };
     var EncodedMapMetaString = new binary_parser_1()
         .uint8('speed')
         .bit1('hideTerrain')
@@ -4955,9 +4956,9 @@
     var GameDataParserComposed = new binary_parser_1()
         .nest('meta', { type: GameMetaData })
         .nest('blocks', { type: GameDataParser });
-    var GameDataReforgedParserComposed = new binary_parser_1()
-        .nest('meta', { type: GameMetaDataReforged })
-        .nest('blocks', { type: GameDataParser });
+    var GameDataReforgedParserComposed = function (buildNo) { return new binary_parser_1()
+        .nest('meta', { type: GameMetaDataReforged(buildNo) })
+        .nest('blocks', { type: GameDataParser }); };
     var EventEmitter = require('events');
     var ReplayParser = /** @class */ (function (_super) {
         __extends(ReplayParser, _super);
@@ -4991,7 +4992,7 @@
             });
             this.decompressed = Buffer.concat(decompressed);
             this.gameMetaDataDecoded = this.header.buildNo >= 6102
-                ? GameDataReforgedParserComposed.parse(this.decompressed)
+                ? GameDataReforgedParserComposed(this.header.buildNo).parse(this.decompressed)
                 : GameDataParserComposed.parse(this.decompressed);
             var decodedMetaStringBuffer = this.decodeGameMetaString(this.gameMetaDataDecoded.meta.encodedString);
             var meta = __assign(__assign(__assign({}, this.gameMetaDataDecoded), this.gameMetaDataDecoded.meta), EncodedMapMetaString.parse(decodedMetaStringBuffer));

@@ -18,8 +18,8 @@ const { inflateSync, constants } = require('zlib')
 const GameDataParserComposed = new Parser()
     .nest('meta', { type: GameMetaData })
     .nest('blocks', { type: GameDataParser })
-const GameDataReforgedParserComposed = new Parser()
-    .nest('meta', { type: GameMetaDataReforged })
+const GameDataReforgedParserComposed = (buildNo: number) => new Parser()
+    .nest('meta', { type: GameMetaDataReforged(buildNo) })
     .nest('blocks', { type: GameDataParser })
 const EventEmitter = require('events')
 
@@ -67,7 +67,7 @@ class ReplayParser extends EventEmitter {
         this.decompressed = Buffer.concat(decompressed)
 
         this.gameMetaDataDecoded = this.header.buildNo >= 6102
-            ? GameDataReforgedParserComposed.parse(this.decompressed)
+            ? GameDataReforgedParserComposed(this.header.buildNo).parse(this.decompressed)
             : GameDataParserComposed.parse(this.decompressed)
         const decodedMetaStringBuffer = this.decodeGameMetaString(this.gameMetaDataDecoded.meta.encodedString)
         const meta = { ...this.gameMetaDataDecoded, ...this.gameMetaDataDecoded.meta, ...EncodedMapMetaString.parse(decodedMetaStringBuffer) }

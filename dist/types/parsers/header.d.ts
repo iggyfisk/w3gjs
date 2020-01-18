@@ -65,7 +65,7 @@ declare const GameMetaData: Parser.Next<{
 } & {
     selectMode: string;
 }, "startSpotCount", number>;
-declare const GameMetaDataReforged: Parser.Next<{
+declare const GameMetaDataReforged: (buildNo: number) => Parser.Next<{
     player: {
         playerId: number;
     } & {

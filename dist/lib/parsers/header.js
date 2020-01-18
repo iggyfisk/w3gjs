@@ -118,7 +118,7 @@ var GameMetaData = new binary_parser_1.Parser()
     .string('selectMode', { length: 1, encoding: 'hex' })
     .int8('startSpotCount');
 exports.GameMetaData = GameMetaData;
-var GameMetaDataReforged = new binary_parser_1.Parser()
+var GameMetaDataReforged = function (buildNo) { return new binary_parser_1.Parser()
     .skip(5)
     .nest('player', { type: HostRecord })
     .string('gameName', { zeroTerminated: true })
@@ -158,7 +158,7 @@ var GameMetaDataReforged = new binary_parser_1.Parser()
         .skip(1)
         .int8('extraLength')
         .buffer('extra', { length: 'extraLength' })
-        .buffer('post', { length: 2 }),
+        .buffer('post', { length: buildNo >= 6103 ? 4 : 2 }),
     readUntil: function (item, buffer) {
         // @ts-ignore
         var next = buffer.readInt8();
@@ -171,7 +171,7 @@ var GameMetaDataReforged = new binary_parser_1.Parser()
     .array('playerSlotRecords', { type: PlayerSlotRecord, length: 'slotRecordCount' })
     .int32le('randomSeed')
     .string('selectMode', { length: 1, encoding: 'hex' })
-    .int8('startSpotCount');
+    .int8('startSpotCount'); };
 exports.GameMetaDataReforged = GameMetaDataReforged;
 var EncodedMapMetaString = new binary_parser_1.Parser()
     .uint8('speed')

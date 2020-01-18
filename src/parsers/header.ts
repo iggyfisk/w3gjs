@@ -127,7 +127,7 @@ const GameMetaData = new Parser()
     .string('selectMode', { length: 1, encoding: 'hex' })
     .int8('startSpotCount')
 
-const GameMetaDataReforged = new Parser()
+const GameMetaDataReforged = (buildNo: number) => new Parser()
     .skip(5)
     .nest('player', { type: HostRecord })
     .string('gameName', { zeroTerminated: true })
@@ -168,7 +168,7 @@ const GameMetaDataReforged = new Parser()
             .skip(1)
             .int8('extraLength')
             .buffer('extra', { length: 'extraLength' })
-            .buffer('post', { length: 2 })
+            .buffer('post', { length: buildNo >= 6103 ? 4 : 2 })
         ,
         readUntil (item, buffer) {
             // @ts-ignore
