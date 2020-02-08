@@ -149,9 +149,11 @@ var GameMetaDataReforged = function (buildNo) { return new binary_parser_1.Parse
     .array('extraPlayerList', {
     type: new binary_parser_1.Parser()
         .int8('preVars1')
-        .buffer('pre', { length: 4 })
+        .buffer('pre', { length: 2 })
+        .int8('playerId')
+        .skip(1)
         .int8('nameLength')
-        .string('name', { length: 'nameLength' })
+        .string('playerName', { length: 'nameLength' })
         .skip(1)
         .int8('clanLength')
         .string('clan', { length: 'clanLength' })

@@ -2,7 +2,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
     typeof define === 'function' && define.amd ? define(factory) :
     (global = global || self, global.index = factory());
-}(this, (function () { 'use strict';
+}(this, function () { 'use strict';
 
     /*! *****************************************************************************
     Copyright (c) Microsoft Corporation. All rights reserved.
@@ -2260,7 +2260,6 @@
     }
 
     var bufferEs6 = /*#__PURE__*/Object.freeze({
-        __proto__: null,
         INSPECT_MAX_BYTES: INSPECT_MAX_BYTES,
         kMaxLength: _kMaxLength,
         Buffer: Buffer$1,
@@ -2557,7 +2556,6 @@
 
 
 
-
     var aliasRegistry = {};
     var FUNCTION_PREFIX = '___parser_';
     var PRIMITIVE_SIZES = {
@@ -2605,9 +2603,8 @@
         array: 'Array',
         choice: 'Choice',
         nest: 'Nest',
-        seek: 'Seek',
+        skip: 'Skip',
         pointer: 'Pointer',
-        saveOffset: 'SaveOffset',
         '': '',
     };
     var Parser = /** @class */ (function () {
@@ -2829,13 +2826,10 @@
             return this;
         };
         Parser.prototype.skip = function (length, options) {
-            return this.seek(length, options);
-        };
-        Parser.prototype.seek = function (relOffset, options) {
             if (options && options.assert) {
-                throw new Error('assert option on seek is not allowed.');
+                throw new Error('assert option on skip is not allowed.');
             }
-            return this.setNextParser('seek', '', { length: relOffset });
+            return this.setNextParser('skip', '', { length: length });
         };
         Parser.prototype.string = function (varName, options) {
             if (!options.zeroTerminated && !options.length && !options.greedy) {
@@ -2881,19 +2875,17 @@
             if (!options.choices) {
                 throw new Error('Choices option of array is not defined.');
             }
-            Object.keys(options.choices).forEach(function (keyString) {
-                var key = parseInt(keyString, 10);
-                var value = options.choices[key];
-                if (isNaN(key)) {
+            Object.keys(options.choices).forEach(function (key) {
+                if (isNaN(parseInt(key, 10))) {
                     throw new Error('Key of choices must be a number.');
                 }
-                if (!value) {
-                    throw new Error("Choice Case " + keyString + " of " + varName + " is not valid.");
+                if (!options.choices[key]) {
+                    throw new Error("Choice Case " + key + " of " + varName + " is not valid.");
                 }
-                if (typeof value === 'string' &&
-                    !aliasRegistry[value] &&
-                    Object.keys(PRIMITIVE_SIZES).indexOf(value) < 0) {
-                    throw new Error("Specified primitive type \"" + value + "\" is not supported.");
+                if (typeof options.choices[key] === 'string' &&
+                    !aliasRegistry[options.choices[key]] &&
+                    Object.keys(PRIMITIVE_SIZES).indexOf(options.choices[key]) < 0) {
+                    throw new Error("Specified primitive type \"" + options.choices[key] + "\" is not supported.");
                 }
             });
             return this.setNextParser('choice', varName, options);
@@ -2933,9 +2925,6 @@
             }
             return this.setNextParser('pointer', varName, options);
         };
-        Parser.prototype.saveOffset = function (varName, options) {
-            return this.setNextParser('saveOffset', varName, options);
-        };
         Parser.prototype.endianess = function (endianess) {
             switch (endianess.toLowerCase()) {
                 case 'little':
@@ -2958,6 +2947,9 @@
         };
         Parser.prototype.getCode = function () {
             var ctx = new context.Context();
+            ctx.pushCode('if (!Buffer.isBuffer(buffer)) {');
+            ctx.generateError('"argument buffer is not a Buffer object"');
+            ctx.pushCode('}');
             if (!this.alias) {
                 this.addRawCode(ctx);
             }
@@ -2982,6 +2974,7 @@
             }
             this.generate(ctx);
             this.resolveReferences(ctx);
+            ctx.pushCode('return vars;');
         };
         Parser.prototype.addAliasedCode = function (ctx) {
             ctx.pushCode("function " + (FUNCTION_PREFIX + this.alias) + "(offset) {");
@@ -3007,8 +3000,8 @@
             });
         };
         Parser.prototype.compile = function () {
-            var src = "(function(buffer, constructorFn) { " + this.getCode() + " })";
-            this.compiled = vm_1.runInNewContext(src, { Buffer: bufferEs6.Buffer, console: console });
+            var src = '(function(buffer, constructorFn) { ' + this.getCode() + ' })';
+            this.compiled = vm_1.runInNewContext(src, { Buffer: bufferEs6.Buffer });
         };
         Parser.prototype.sizeOf = function () {
             var size = NaN;
@@ -3038,7 +3031,7 @@
                 size = this.options.length * elementSize;
                 // if this a skip
             }
-            else if (this.type === 'seek') {
+            else if (this.type === 'skip') {
                 size = this.options.length;
                 // if this is a nested parser
             }
@@ -3057,9 +3050,6 @@
         Parser.prototype.parse = function (buffer) {
             if (!this.compiled) {
                 this.compile();
-            }
-            if (!bufferEs6.Buffer.isBuffer(buffer)) {
-                throw new Error('argument buffer is not a Buffer object');
             }
             return this.compiled(buffer, this.constructorFn);
         };
@@ -3111,8 +3101,8 @@
                     case 'buffer':
                         this.generateBuffer(ctx);
                         break;
-                    case 'seek':
-                        this.generateSeek(ctx);
+                    case 'skip':
+                        this.generateSkip(ctx);
                         break;
                     case 'nest':
                         this.generateNest(ctx);
@@ -3125,9 +3115,6 @@
                         break;
                     case 'pointer':
                         this.generatePointer(ctx);
-                        break;
-                    case 'saveOffset':
-                        this.generateSaveOffset(ctx);
                         break;
                 }
                 this.generateAssert(ctx);
@@ -3203,16 +3190,17 @@
                 var bitOffset_1 = 0;
                 var isBigEndian_1 = this.endian === 'be';
                 ctx.bitFields.forEach(function (parser) {
-                    var length = parser.options.length;
-                    var offset = isBigEndian_1 ? sum_1 - bitOffset_1 - length : bitOffset_1;
-                    var mask = (1 << length) - 1;
+                    var offset = isBigEndian_1
+                        ? sum_1 - bitOffset_1 - parser.options.length
+                        : bitOffset_1;
+                    var mask = (1 << parser.options.length) - 1;
                     ctx.pushCode(parser.varName + " = " + val_1 + " >> " + offset + " & " + mask + ";");
-                    bitOffset_1 += length;
+                    bitOffset_1 += parser.options.length;
                 });
                 ctx.bitFields = [];
             }
         };
-        Parser.prototype.generateSeek = function (ctx) {
+        Parser.prototype.generateSkip = function (ctx) {
             var length = ctx.generateOption(this.options.length);
             ctx.pushCode("offset += " + length + ";");
         };
@@ -3361,7 +3349,7 @@
             }
             ctx.pushCode("switch(" + tag + ") {");
             Object.keys(this.options.choices).forEach(function (tag) {
-                var type = _this.options.choices[parseInt(tag, 10)];
+                var type = _this.options.choices[tag];
                 ctx.pushCode("case " + tag + ":");
                 _this.generateChoiceCase(ctx, _this.varName, type);
                 ctx.pushCode('break;');
@@ -3427,10 +3415,6 @@
             }
             // Restore offset
             ctx.pushCode("offset = " + tempVar + ";");
-        };
-        Parser.prototype.generateSaveOffset = function (ctx) {
-            var varName = ctx.generateVariable(this.varName);
-            ctx.pushCode(varName + " = offset");
         };
         return Parser;
     }());
@@ -4825,9 +4809,11 @@
         .array('extraPlayerList', {
         type: new binary_parser_1()
             .int8('preVars1')
-            .buffer('pre', { length: 4 })
+            .buffer('pre', { length: 2 })
+            .int8('playerId')
+            .skip(1)
             .int8('nameLength')
-            .string('name', { length: 'nameLength' })
+            .string('playerName', { length: 'nameLength' })
             .skip(1)
             .int8('clanLength')
             .string('clan', { length: 'clanLength' })
@@ -5120,7 +5106,12 @@
         W3GReplay.prototype.handleMetaData = function (metaData) {
             var _this = this;
             this.slots = metaData.playerSlotRecords;
-            this.playerList = __spreadArrays([metaData.player], metaData.playerList);
+            if (this.header.buildNo >= 6102) {
+                this.playerList = __spreadArrays(metaData.extraPlayerList);
+            }
+            else {
+                this.playerList = __spreadArrays([metaData.player], metaData.playerList);
+            }
             this.meta = metaData;
             var tempPlayers = {};
             this.teams = [];
@@ -5330,5 +5321,5 @@
 
     return W3GReplay;
 
-})));
+}));
 //# sourceMappingURL=W3GReplay.umd.js.map

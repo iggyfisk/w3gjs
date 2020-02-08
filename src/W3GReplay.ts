@@ -92,12 +92,15 @@ class W3GReplay extends ReplayParser {
 
     handleMetaData (metaData: GameMetaDataDecoded) {
         this.slots = metaData.playerSlotRecords
-        this.playerList = [metaData.player, ...metaData.playerList]
+        if (this.header.buildNo >= 6102) {
+            this.playerList = [...metaData.extraPlayerList]
+        } else {
+            this.playerList = [metaData.player, ...metaData.playerList]
+        }
         this.meta = metaData
         const tempPlayers: {[key: string]: GameMetaDataDecoded['player'] } = {}
         this.teams = []
         this.players = {}
-
         this.playerList.forEach((player: GameMetaDataDecoded['player']): void => {
             tempPlayers[player.playerId] = player
         })
