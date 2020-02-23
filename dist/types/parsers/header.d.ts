@@ -99,9 +99,11 @@ declare const GameMetaDataReforged: (buildNo: number) => Parser.Next<{
     } & {
         pre: Buffer;
     } & {
+        playerId: number;
+    } & {
         nameLength: number;
     } & {
-        name: string;
+        playerName: string;
     } & {
         clanLength: number;
     } & {

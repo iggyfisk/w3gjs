@@ -82,7 +82,12 @@ var W3GReplay = /** @class */ (function (_super) {
     W3GReplay.prototype.handleMetaData = function (metaData) {
         var _this = this;
         this.slots = metaData.playerSlotRecords;
-        this.playerList = __spreadArrays([metaData.player], metaData.playerList);
+        if (this.header.buildNo >= 6102) {
+            this.playerList = __spreadArrays(metaData.extraPlayerList);
+        }
+        else {
+            this.playerList = __spreadArrays([metaData.player], metaData.playerList);
+        }
         this.meta = metaData;
         var tempPlayers = {};
         this.teams = [];

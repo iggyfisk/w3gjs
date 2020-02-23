@@ -37,6 +37,7 @@ export interface GameMetaDataDecoded {
     gameType: string;
     languageId: string;
     playerList: GameMetaDataDecoded['player'][];
+    extraPlayerList: [];
     gameStartRecord: number;
     dataByteCount: number;
     slotRecordCount: number;

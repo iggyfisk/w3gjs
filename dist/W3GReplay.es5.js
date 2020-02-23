@@ -4819,9 +4819,11 @@ var GameMetaDataReforged = function (buildNo) { return new binary_parser_1()
     .array('extraPlayerList', {
     type: new binary_parser_1()
         .int8('preVars1')
-        .buffer('pre', { length: 4 })
+        .buffer('pre', { length: 2 })
+        .int8('playerId')
+        .skip(1)
         .int8('nameLength')
-        .string('name', { length: 'nameLength' })
+        .string('playerName', { length: 'nameLength' })
         .skip(1)
         .int8('clanLength')
         .string('clan', { length: 'clanLength' })
@@ -5114,7 +5116,12 @@ var W3GReplay = /** @class */ (function (_super) {
     W3GReplay.prototype.handleMetaData = function (metaData) {
         var _this = this;
         this.slots = metaData.playerSlotRecords;
-        this.playerList = __spreadArrays([metaData.player], metaData.playerList);
+        if (this.header.buildNo >= 6102) {
+            this.playerList = __spreadArrays(metaData.extraPlayerList);
+        }
+        else {
+            this.playerList = __spreadArrays([metaData.player], metaData.playerList);
+        }
         this.meta = metaData;
         var tempPlayers = {};
         this.teams = [];
