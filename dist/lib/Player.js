@@ -211,8 +211,8 @@ var Player = /** @class */ (function () {
                 break;
         }
     };
-    Player.prototype.handlePing = function (gametime, pingCoords) {
-        this.pings.push({ ms: gametime, coords: pingCoords });
+    Player.prototype.handlePing = function (gametime, x, y) {
+        this.pings.push({ ms: gametime, x: x, y: y });
         this.actions.ping = this.actions.ping + 1 || 1;
         this._currentlyTrackedAPM++;
     };

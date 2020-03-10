@@ -70,7 +70,7 @@ class Player {
         order: { id: string; ms: number }[];
     }
 
-    pings: { ms: number; coords: number[]; }[];
+    pings: { ms: number; x: number; y: number; }[];
 
     heroes: HeroInfo[]
 
@@ -307,8 +307,8 @@ class Player {
         }
     }
 
-    handlePing (gametime: number, pingCoords: number[]) {
-        this.pings.push({ ms: gametime, coords: pingCoords })
+    handlePing (gametime: number, x: number, y: number) {
+        this.pings.push({ ms: gametime, x: x, y: y })
         this.actions.ping = this.actions.ping + 1 || 1
         this._currentlyTrackedAPM++
     }

@@ -4660,8 +4660,8 @@
                     break;
             }
         };
-        Player.prototype.handlePing = function (gametime, pingCoords) {
-            this.pings.push({ ms: gametime, coords: pingCoords });
+        Player.prototype.handlePing = function (gametime, x, y) {
+            this.pings.push({ ms: gametime, x: x, y: y });
             this.actions.ping = this.actions.ping + 1 || 1;
             this._currentlyTrackedAPM++;
         };
@@ -5225,7 +5225,7 @@
                     currentPlayer.handleOther(action.actionId);
                     break;
                 case 0x68:
-                    currentPlayer.handlePing(this.totalTimeTracker, [Math.round(action.targetX), Math.round(action.targetY)]);
+                    currentPlayer.handlePing(this.totalTimeTracker, Math.round(action.targetX), Math.round(action.targetY));
                     break;
                 case 0x6b:
                     this.w3mmd.push(action);

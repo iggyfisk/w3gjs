@@ -71,7 +71,8 @@ declare class Player {
     };
     pings: {
         ms: number;
-        coords: number[];
+        x: number;
+        y: number;
     }[];
     heroes: HeroInfo[];
     heroCollector: {
@@ -117,7 +118,7 @@ declare class Player {
     handle0x14(itemid: ItemID): void;
     handle0x16(selectMode: number, isAPM: boolean): void;
     handleOther(actionId: number): void;
-    handlePing(gametime: number, pingCoords: number[]): void;
+    handlePing(gametime: number, x: number, y: number): void;
     cleanup(): void;
 }
 export default Player;
