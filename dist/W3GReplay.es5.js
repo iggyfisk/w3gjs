@@ -2254,6 +2254,7 @@ function isSlowBuffer (obj) {
 }
 
 var bufferEs6 = /*#__PURE__*/Object.freeze({
+    __proto__: null,
     INSPECT_MAX_BYTES: INSPECT_MAX_BYTES,
     kMaxLength: _kMaxLength,
     Buffer: Buffer$1,
@@ -2550,6 +2551,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 
 
+
 var aliasRegistry = {};
 var FUNCTION_PREFIX = '___parser_';
 var PRIMITIVE_SIZES = {
@@ -2597,8 +2599,9 @@ var CAPITILIZED_TYPE_NAMES = {
     array: 'Array',
     choice: 'Choice',
     nest: 'Nest',
-    skip: 'Skip',
+    seek: 'Seek',
     pointer: 'Pointer',
+    saveOffset: 'SaveOffset',
     '': '',
 };
 var Parser = /** @class */ (function () {
@@ -2820,10 +2823,13 @@ var Parser = /** @class */ (function () {
         return this;
     };
     Parser.prototype.skip = function (length, options) {
+        return this.seek(length, options);
+    };
+    Parser.prototype.seek = function (relOffset, options) {
         if (options && options.assert) {
-            throw new Error('assert option on skip is not allowed.');
+            throw new Error('assert option on seek is not allowed.');
         }
-        return this.setNextParser('skip', '', { length: length });
+        return this.setNextParser('seek', '', { length: relOffset });
     };
     Parser.prototype.string = function (varName, options) {
         if (!options.zeroTerminated && !options.length && !options.greedy) {
@@ -2869,17 +2875,19 @@ var Parser = /** @class */ (function () {
         if (!options.choices) {
             throw new Error('Choices option of array is not defined.');
         }
-        Object.keys(options.choices).forEach(function (key) {
-            if (isNaN(parseInt(key, 10))) {
+        Object.keys(options.choices).forEach(function (keyString) {
+            var key = parseInt(keyString, 10);
+            var value = options.choices[key];
+            if (isNaN(key)) {
                 throw new Error('Key of choices must be a number.');
             }
-            if (!options.choices[key]) {
-                throw new Error("Choice Case " + key + " of " + varName + " is not valid.");
+            if (!value) {
+                throw new Error("Choice Case " + keyString + " of " + varName + " is not valid.");
             }
-            if (typeof options.choices[key] === 'string' &&
-                !aliasRegistry[options.choices[key]] &&
-                Object.keys(PRIMITIVE_SIZES).indexOf(options.choices[key]) < 0) {
-                throw new Error("Specified primitive type \"" + options.choices[key] + "\" is not supported.");
+            if (typeof value === 'string' &&
+                !aliasRegistry[value] &&
+                Object.keys(PRIMITIVE_SIZES).indexOf(value) < 0) {
+                throw new Error("Specified primitive type \"" + value + "\" is not supported.");
             }
         });
         return this.setNextParser('choice', varName, options);
@@ -2919,6 +2927,9 @@ var Parser = /** @class */ (function () {
         }
         return this.setNextParser('pointer', varName, options);
     };
+    Parser.prototype.saveOffset = function (varName, options) {
+        return this.setNextParser('saveOffset', varName, options);
+    };
     Parser.prototype.endianess = function (endianess) {
         switch (endianess.toLowerCase()) {
             case 'little':
@@ -2941,9 +2952,6 @@ var Parser = /** @class */ (function () {
     };
     Parser.prototype.getCode = function () {
         var ctx = new context.Context();
-        ctx.pushCode('if (!Buffer.isBuffer(buffer)) {');
-        ctx.generateError('"argument buffer is not a Buffer object"');
-        ctx.pushCode('}');
         if (!this.alias) {
             this.addRawCode(ctx);
         }
@@ -2968,7 +2976,6 @@ var Parser = /** @class */ (function () {
         }
         this.generate(ctx);
         this.resolveReferences(ctx);
-        ctx.pushCode('return vars;');
     };
     Parser.prototype.addAliasedCode = function (ctx) {
         ctx.pushCode("function " + (FUNCTION_PREFIX + this.alias) + "(offset) {");
@@ -2994,8 +3001,8 @@ var Parser = /** @class */ (function () {
         });
     };
     Parser.prototype.compile = function () {
-        var src = '(function(buffer, constructorFn) { ' + this.getCode() + ' })';
-        this.compiled = vm_1.runInNewContext(src, { Buffer: bufferEs6.Buffer });
+        var src = "(function(buffer, constructorFn) { " + this.getCode() + " })";
+        this.compiled = vm_1.runInNewContext(src, { Buffer: bufferEs6.Buffer, console: console });
     };
     Parser.prototype.sizeOf = function () {
         var size = NaN;
@@ -3025,7 +3032,7 @@ var Parser = /** @class */ (function () {
             size = this.options.length * elementSize;
             // if this a skip
         }
-        else if (this.type === 'skip') {
+        else if (this.type === 'seek') {
             size = this.options.length;
             // if this is a nested parser
         }
@@ -3044,6 +3051,9 @@ var Parser = /** @class */ (function () {
     Parser.prototype.parse = function (buffer) {
         if (!this.compiled) {
             this.compile();
+        }
+        if (!bufferEs6.Buffer.isBuffer(buffer)) {
+            throw new Error('argument buffer is not a Buffer object');
         }
         return this.compiled(buffer, this.constructorFn);
     };
@@ -3095,8 +3105,8 @@ var Parser = /** @class */ (function () {
                 case 'buffer':
                     this.generateBuffer(ctx);
                     break;
-                case 'skip':
-                    this.generateSkip(ctx);
+                case 'seek':
+                    this.generateSeek(ctx);
                     break;
                 case 'nest':
                     this.generateNest(ctx);
@@ -3109,6 +3119,9 @@ var Parser = /** @class */ (function () {
                     break;
                 case 'pointer':
                     this.generatePointer(ctx);
+                    break;
+                case 'saveOffset':
+                    this.generateSaveOffset(ctx);
                     break;
             }
             this.generateAssert(ctx);
@@ -3184,17 +3197,16 @@ var Parser = /** @class */ (function () {
             var bitOffset_1 = 0;
             var isBigEndian_1 = this.endian === 'be';
             ctx.bitFields.forEach(function (parser) {
-                var offset = isBigEndian_1
-                    ? sum_1 - bitOffset_1 - parser.options.length
-                    : bitOffset_1;
-                var mask = (1 << parser.options.length) - 1;
+                var length = parser.options.length;
+                var offset = isBigEndian_1 ? sum_1 - bitOffset_1 - length : bitOffset_1;
+                var mask = (1 << length) - 1;
                 ctx.pushCode(parser.varName + " = " + val_1 + " >> " + offset + " & " + mask + ";");
-                bitOffset_1 += parser.options.length;
+                bitOffset_1 += length;
             });
             ctx.bitFields = [];
         }
     };
-    Parser.prototype.generateSkip = function (ctx) {
+    Parser.prototype.generateSeek = function (ctx) {
         var length = ctx.generateOption(this.options.length);
         ctx.pushCode("offset += " + length + ";");
     };
@@ -3343,7 +3355,7 @@ var Parser = /** @class */ (function () {
         }
         ctx.pushCode("switch(" + tag + ") {");
         Object.keys(this.options.choices).forEach(function (tag) {
-            var type = _this.options.choices[tag];
+            var type = _this.options.choices[parseInt(tag, 10)];
             ctx.pushCode("case " + tag + ":");
             _this.generateChoiceCase(ctx, _this.varName, type);
             ctx.pushCode('break;');
@@ -3409,6 +3421,10 @@ var Parser = /** @class */ (function () {
         }
         // Restore offset
         ctx.pushCode("offset = " + tempVar + ";");
+    };
+    Parser.prototype.generateSaveOffset = function (ctx) {
+        var varName = ctx.generateVariable(this.varName);
+        ctx.pushCode(varName + " = offset");
     };
     return Parser;
 }());
