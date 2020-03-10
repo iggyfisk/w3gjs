@@ -176,7 +176,9 @@ var ESCPressedAction = new binary_parser_1.Parser();
 var ChooseHeroSkillSubmenu = new binary_parser_1.Parser();
 var EnterBuildingSubmenu = new binary_parser_1.Parser();
 var MinimapSignal = new binary_parser_1.Parser()
-    .skip(12);
+    .floatle('targetX')
+    .floatle('targetY')
+    .skip(4);
 var ContinueGame = new binary_parser_1.Parser()
     .skip(16);
 var UnknownAction75 = new binary_parser_1.Parser()

@@ -202,7 +202,9 @@ const ChooseHeroSkillSubmenu = new Parser()
 const EnterBuildingSubmenu = new Parser()
 
 const MinimapSignal = new Parser()
-    .skip(12)
+    .floatle('targetX')
+    .floatle('targetY')
+    .skip(4)
 
 const ContinueGame = new Parser()
     .skip(16)

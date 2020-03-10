@@ -203,6 +203,9 @@ class W3GReplay extends ReplayParser {
             case 0x67:
                 currentPlayer.handleOther(action.actionId)
                 break
+            case 0x68:
+                currentPlayer.handlePing(this.totalTimeTracker, [Math.round(action.targetX), Math.round(action.targetY)])
+                break
             case 0x6b:
                 this.w3mmd.push(action)
                 break

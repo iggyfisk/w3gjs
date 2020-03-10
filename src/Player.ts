@@ -70,6 +70,8 @@ class Player {
         order: { id: string; ms: number }[];
     }
 
+    pings: { ms: number; coords: number[]; }[];
+
     heroes: HeroInfo[]
 
     heroCollector: {[key: string]: HeroInfo}
@@ -89,6 +91,7 @@ class Player {
         subgroup: number;
         selecthotkey: number;
         esc: number;
+        ping: number;
     }
 
     _currentlyTrackedAPM: number
@@ -114,6 +117,7 @@ class Player {
         this.upgrades = { summary: {}, order: [] }
         this.items = { summary: {}, order: [] }
         this.buildings = { summary: {}, order: [] }
+        this.pings = []
         this.heroes = []
         this.heroCollector = {}
         this.heroCount = 0
@@ -129,7 +133,8 @@ class Player {
             removeunit: 0,
             subgroup: 0,
             selecthotkey: 0,
-            esc: 0
+            esc: 0,
+            ping: 0
         }
         this._currentlyTrackedAPM = 0
         this._lastActionWasDeselect = false
@@ -300,6 +305,12 @@ class Player {
                 this._currentlyTrackedAPM++
                 break
         }
+    }
+
+    handlePing (gametime: number, pingCoords: number[]) {
+        this.pings.push({ ms: gametime, coords: pingCoords })
+        this.actions.ping = this.actions.ping + 1 || 1
+        this._currentlyTrackedAPM++
     }
 
     cleanup (): void {
