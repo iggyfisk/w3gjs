@@ -69,6 +69,11 @@ declare class Player {
             ms: number;
         }[];
     };
+    pings: {
+        ms: number;
+        x: number;
+        y: number;
+    }[];
     heroes: HeroInfo[];
     heroCollector: {
         [key: string]: HeroInfo;
@@ -87,6 +92,7 @@ declare class Player {
         subgroup: number;
         selecthotkey: number;
         esc: number;
+        ping: number;
     };
     _currentlyTrackedAPM: number;
     _retrainingMetadata: {
@@ -112,6 +118,7 @@ declare class Player {
     handle0x14(itemid: ItemID): void;
     handle0x16(selectMode: number, isAPM: boolean): void;
     handleOther(actionId: number): void;
+    handlePing(gametime: number, x: number, y: number): void;
     cleanup(): void;
 }
 export default Player;

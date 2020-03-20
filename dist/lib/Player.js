@@ -27,6 +27,7 @@ var Player = /** @class */ (function () {
         this.upgrades = { summary: {}, order: [] };
         this.items = { summary: {}, order: [] };
         this.buildings = { summary: {}, order: [] };
+        this.pings = [];
         this.heroes = [];
         this.heroCollector = {};
         this.heroCount = 0;
@@ -42,7 +43,8 @@ var Player = /** @class */ (function () {
             removeunit: 0,
             subgroup: 0,
             selecthotkey: 0,
-            esc: 0
+            esc: 0,
+            ping: 0
         };
         this._currentlyTrackedAPM = 0;
         this._lastActionWasDeselect = false;
@@ -208,6 +210,11 @@ var Player = /** @class */ (function () {
                 this._currentlyTrackedAPM++;
                 break;
         }
+    };
+    Player.prototype.handlePing = function (gametime, x, y) {
+        this.pings.push({ ms: gametime, x: x, y: y });
+        this.actions.ping = this.actions.ping + 1 || 1;
+        this._currentlyTrackedAPM++;
     };
     Player.prototype.cleanup = function () {
         var apmSum = this.actions.timed.reduce(function (a, b) { return a + b; });
