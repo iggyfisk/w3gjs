@@ -3643,6 +3643,8 @@ var UnknownAction75 = new binary_parser_1()
     .skip(1);
 var UnknownAction7B = new binary_parser_1()
     .skip(16);
+var UnknownAction78 = new binary_parser_1()
+    .skip(20);
 var ScenarioTriggerAction = new binary_parser_1()
     .skip(12);
 var W3MMDAction = new binary_parser_1()
@@ -3712,6 +3714,7 @@ var ActionBlock = new binary_parser_1()
         0x6c: new binary_parser_1(),
         0x6d: new binary_parser_1(),
         0x75: UnknownAction75,
+        0x78: UnknownAction78,
         0x7B: UnknownAction7B,
         0x7a: new binary_parser_1().skip(20)
     }

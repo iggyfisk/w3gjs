@@ -215,6 +215,9 @@ const UnknownAction75 = new Parser()
 const UnknownAction7B = new Parser()
     .skip(16)
 
+const UnknownAction78 = new Parser()
+    .skip(20)
+
 const ScenarioTriggerAction = new Parser()
     .skip(12)
 
@@ -286,6 +289,7 @@ const ActionBlock = new Parser()
             0x6c: new Parser(),
             0x6d: new Parser(),
             0x75: UnknownAction75,
+            0x78: UnknownAction78,
             0x7B: UnknownAction7B,
             0x7a: new Parser().skip(20)
         }
