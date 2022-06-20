@@ -4790,7 +4790,7 @@
         .int32le('randomSeed')
         .string('selectMode', { length: 1, encoding: 'hex' })
         .int8('startSpotCount');
-    var GameMetaDataReforged = function (buildNo) { return new binary_parser_1()
+    var GameMetaDataReforged = function (buildNo, version) { return new binary_parser_1()
         .skip(5)
         .nest('player', { type: HostRecord })
         .string('gameName', { zeroTerminated: true })
@@ -4816,7 +4816,7 @@
             return next === 57;
         }
     })
-        .skip(buildNo >= 6114 ? 2 : 12) // PTR 1.33 (build 6114) changed this to two bytes instead of the 8+4 from 'main reforged'
+        .skip(version >= 10033 ? 2 : 12) // PTR 1.33 (build 6114) changed this to two bytes instead of the 4+8 from 'main reforged'
         .array('extraPlayerList', {
         type: new binary_parser_1()
             .int8('preVars1')
@@ -4953,8 +4953,8 @@
     var GameDataParserComposed = new binary_parser_1()
         .nest('meta', { type: GameMetaData })
         .nest('blocks', { type: GameDataParser });
-    var GameDataReforgedParserComposed = function (buildNo) { return new binary_parser_1()
-        .nest('meta', { type: GameMetaDataReforged(buildNo) })
+    var GameDataReforgedParserComposed = function (buildNo, version) { return new binary_parser_1()
+        .nest('meta', { type: GameMetaDataReforged(buildNo, version) })
         .nest('blocks', { type: GameDataParser }); };
     var EventEmitter = require('events');
     var ReplayParser = /** @class */ (function (_super) {
@@ -4989,7 +4989,7 @@
             });
             this.decompressed = Buffer.concat(decompressed);
             this.gameMetaDataDecoded = this.header.buildNo >= 6102
-                ? GameDataReforgedParserComposed(this.header.buildNo).parse(this.decompressed)
+                ? GameDataReforgedParserComposed(this.header.buildNo, this.header.version).parse(this.decompressed)
                 : GameDataParserComposed.parse(this.decompressed);
             var decodedMetaStringBuffer = this.decodeGameMetaString(this.gameMetaDataDecoded.meta.encodedString);
             var meta = __assign(__assign(__assign({}, this.gameMetaDataDecoded), this.gameMetaDataDecoded.meta), EncodedMapMetaString.parse(decodedMetaStringBuffer));

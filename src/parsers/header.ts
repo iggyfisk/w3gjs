@@ -127,7 +127,7 @@ const GameMetaData = new Parser()
     .string('selectMode', { length: 1, encoding: 'hex' })
     .int8('startSpotCount')
 
-const GameMetaDataReforged = (buildNo: number) => new Parser()
+const GameMetaDataReforged = (buildNo: number, version: number) => new Parser()
     .skip(5)
     .nest('player', { type: HostRecord })
     .string('gameName', { zeroTerminated: true })
@@ -154,7 +154,7 @@ const GameMetaDataReforged = (buildNo: number) => new Parser()
             return next === 57
         }
     })
-    .skip(buildNo >= 6114 ? 2 : 12) // PTR 1.33 (build 6114) changed this to two bytes instead of the 8+4 from 'main reforged'
+    .skip(version >= 10033 ? 2 : 12) // PTR 1.33 (build 6114) changed this to two bytes instead of the 4+8 from 'main reforged'
     .array('extraPlayerList', {
         type: new Parser()
             .int8('preVars1')

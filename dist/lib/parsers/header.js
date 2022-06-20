@@ -118,7 +118,7 @@ var GameMetaData = new binary_parser_1.Parser()
     .string('selectMode', { length: 1, encoding: 'hex' })
     .int8('startSpotCount');
 exports.GameMetaData = GameMetaData;
-var GameMetaDataReforged = function (buildNo) { return new binary_parser_1.Parser()
+var GameMetaDataReforged = function (buildNo, version) { return new binary_parser_1.Parser()
     .skip(5)
     .nest('player', { type: HostRecord })
     .string('gameName', { zeroTerminated: true })
@@ -144,7 +144,7 @@ var GameMetaDataReforged = function (buildNo) { return new binary_parser_1.Parse
         return next === 57;
     }
 })
-    .skip(buildNo >= 6114 ? 2 : 12) // PTR 1.33 (build 6114) changed this to two bytes instead of the 8+4 from 'main reforged'
+    .skip(version >= 10033 ? 2 : 12) // PTR 1.33 (build 6114) changed this to two bytes instead of the 4+8 from 'main reforged'
     .array('extraPlayerList', {
     type: new binary_parser_1.Parser()
         .int8('preVars1')
