@@ -154,8 +154,7 @@ const GameMetaDataReforged = (buildNo: number) => new Parser()
             return next === 57
         }
     })
-    .skip(4) // GamestartRecord etc used to go here
-    .skip(8) // More stuff that happens before the next list of players
+    .skip(buildNo >= 6114 ? 2 : 12) // PTR 1.33 (build 6114) changed this to two bytes instead of the 8+4 from 'main reforged'
     .array('extraPlayerList', {
         type: new Parser()
             .int8('preVars1')
