@@ -35,8 +35,8 @@ var _a = require('zlib'), inflateSync = _a.inflateSync, constants = _a.constants
 var GameDataParserComposed = new binary_parser_1.Parser()
     .nest('meta', { type: header_1.GameMetaData })
     .nest('blocks', { type: gamedata_1.GameDataParser });
-var GameDataReforgedParserComposed = function (buildNo) { return new binary_parser_1.Parser()
-    .nest('meta', { type: header_1.GameMetaDataReforged(buildNo) })
+var GameDataReforgedParserComposed = function (buildNo, version) { return new binary_parser_1.Parser()
+    .nest('meta', { type: header_1.GameMetaDataReforged(buildNo, version) })
     .nest('blocks', { type: gamedata_1.GameDataParser }); };
 var EventEmitter = require('events');
 var ReplayParser = /** @class */ (function (_super) {
@@ -71,7 +71,7 @@ var ReplayParser = /** @class */ (function (_super) {
         });
         this.decompressed = Buffer.concat(decompressed);
         this.gameMetaDataDecoded = this.header.buildNo >= 6102
-            ? GameDataReforgedParserComposed(this.header.buildNo).parse(this.decompressed)
+            ? GameDataReforgedParserComposed(this.header.buildNo, this.header.version).parse(this.decompressed)
             : GameDataParserComposed.parse(this.decompressed);
         var decodedMetaStringBuffer = this.decodeGameMetaString(this.gameMetaDataDecoded.meta.encodedString);
         var meta = __assign(__assign(__assign({}, this.gameMetaDataDecoded), this.gameMetaDataDecoded.meta), header_1.EncodedMapMetaString.parse(decodedMetaStringBuffer));

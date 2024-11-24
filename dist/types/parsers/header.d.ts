@@ -69,7 +69,7 @@ declare const GameMetaData: Parser<{
 } & {
     startSpotCount: number;
 }>;
-declare const GameMetaDataReforged: (buildNo: number) => Parser<{
+declare const GameMetaDataReforged: (buildNo: number, version: number) => Parser<{
     player: {
         playerId: number;
     } & {

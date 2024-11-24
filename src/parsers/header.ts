@@ -127,7 +127,56 @@ const GameMetaData = new Parser()
     .string('selectMode', { length: 1, encoding: 'hex' })
     .int8('startSpotCount')
 
-const GameMetaDataReforged = (buildNo: number) => new Parser()
+const extraPlayerList6102 = new Parser() // structure introduced in 1.32.0.5
+    .int8('preVars1')
+    .buffer('pre', { length: 2 })
+    .int8('playerId')
+    .skip(1)
+    .int8('nameLength')
+    .string('playerName', { length: 'nameLength'})
+    .skip(1)
+    .int8('clanLength')
+    .string('clan', { length: 'clanLength'})
+    .skip(1)
+    .int8('extraLength')
+    .buffer('extra', { length: 'extraLength' })
+    .buffer('post', { length: 2 })
+
+const extraPlayerList6103 = new Parser() // changes from 1.32.0.6, just before launch
+    .int8('preVars1')
+    .buffer('pre', { length: 2 })
+    .int8('playerId')
+    .skip(1)
+    .int8('nameLength')
+    .string('playerName', { length: 'nameLength'})
+    .skip(1)
+    .int8('clanLength')
+    .string('clan', { length: 'clanLength'})
+    .skip(1)
+    .int8('extraLength')
+    .buffer('extra', { length: 'extraLength' })
+    .buffer('post', { length: 4 }) // this was the only difference
+
+const extraPlayerList133 = new Parser() // changes from 1.33 PTR
+    .int8('preVars1')
+    .buffer('pre', { length: 2 })
+    .int8('playerId')
+    .skip(1)
+    .int8('nameLength')
+    .string('playerName', { length: 'nameLength'})
+    .skip(1)
+    .int8('clanLength')
+    .string('clan', { length: 'clanLength'})
+    .skip(1)
+    .int8('extraLength')
+    .buffer('extra', { length: 'extraLength' })
+    .buffer('post', { length: 3 }) // this was changed
+    .int8('raceLength')
+    .string('raceName', { length: 'raceLength'}) // this is new
+    .skip(1)
+    .skip(8) // there might be something good in here...ladder rank?
+
+const GameMetaDataReforged = (buildNo: number, version: number) => new Parser()
     .skip(5)
     .nest('player', { type: HostRecord })
     .string('gameName', { zeroTerminated: true })
@@ -154,23 +203,9 @@ const GameMetaDataReforged = (buildNo: number) => new Parser()
             return next === 57
         }
     })
-    .skip(4) // GamestartRecord etc used to go here
-    .skip(8) // More stuff that happens before the next list of players
+    .skip(12)
     .array('extraPlayerList', {
-        type: new Parser()
-            .int8('preVars1')
-            .buffer('pre', { length: 2 })
-            .int8('playerId')
-            .skip(1)
-            .int8('nameLength')
-            .string('playerName', { length: 'nameLength'})
-            .skip(1)
-            .int8('clanLength')
-            .string('clan', { length: 'clanLength'})
-            .skip(1)
-            .int8('extraLength')
-            .buffer('extra', { length: 'extraLength' })
-            .buffer('post', { length: buildNo >= 6103 ? 4 : 2 })
+        type: version >= 10033 ? extraPlayerList133 : buildNo >= 6103 ? extraPlayerList6103 : extraPlayerList6102
         ,
         readUntil (item, buffer) {
             // @ts-ignore

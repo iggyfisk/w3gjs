@@ -3649,6 +3649,8 @@
         .skip(1);
     var UnknownAction7B = new binary_parser_1()
         .skip(16);
+    var UnknownAction78 = new binary_parser_1()
+        .skip(20);
     var ScenarioTriggerAction = new binary_parser_1()
         .skip(12);
     var W3MMDAction = new binary_parser_1()
@@ -3718,6 +3720,7 @@
             0x6c: new binary_parser_1(),
             0x6d: new binary_parser_1(),
             0x75: UnknownAction75,
+            0x78: UnknownAction78,
             0x7B: UnknownAction7B,
             0x7a: new binary_parser_1().skip(20)
         }
@@ -4787,7 +4790,53 @@
         .int32le('randomSeed')
         .string('selectMode', { length: 1, encoding: 'hex' })
         .int8('startSpotCount');
-    var GameMetaDataReforged = function (buildNo) { return new binary_parser_1()
+    var extraPlayerList6102 = new binary_parser_1() // structure introduced in 1.32.0.5
+        .int8('preVars1')
+        .buffer('pre', { length: 2 })
+        .int8('playerId')
+        .skip(1)
+        .int8('nameLength')
+        .string('playerName', { length: 'nameLength' })
+        .skip(1)
+        .int8('clanLength')
+        .string('clan', { length: 'clanLength' })
+        .skip(1)
+        .int8('extraLength')
+        .buffer('extra', { length: 'extraLength' })
+        .buffer('post', { length: 2 });
+    var extraPlayerList6103 = new binary_parser_1() // changes from 1.32.0.6, just before launch
+        .int8('preVars1')
+        .buffer('pre', { length: 2 })
+        .int8('playerId')
+        .skip(1)
+        .int8('nameLength')
+        .string('playerName', { length: 'nameLength' })
+        .skip(1)
+        .int8('clanLength')
+        .string('clan', { length: 'clanLength' })
+        .skip(1)
+        .int8('extraLength')
+        .buffer('extra', { length: 'extraLength' })
+        .buffer('post', { length: 4 }); // this was the only difference
+    var extraPlayerList133 = new binary_parser_1() // changes from 1.33 PTR
+        .int8('preVars1')
+        .buffer('pre', { length: 2 })
+        .int8('playerId')
+        .skip(1)
+        .int8('nameLength')
+        .string('playerName', { length: 'nameLength' })
+        .skip(1)
+        .int8('clanLength')
+        .string('clan', { length: 'clanLength' })
+        .skip(1)
+        .int8('extraLength')
+        .buffer('extra', { length: 'extraLength' })
+        .buffer('post', { length: 3 }) // this was changed
+        .int8('raceLength')
+        .string('raceName', { length: 'raceLength' }) // this is new
+        .skip(1)
+        .skip(8); // there might be something good in here...ladder rank?
+    var GameMetaDataReforged = function (buildNo, version) { return new binary_parser_1()
         .skip(5)
         .nest('player', { type: HostRecord })
         .string('gameName', { zeroTerminated: true })
@@ -4813,23 +4862,9 @@
             return next === 57;
         }
     })
-        .skip(4) // GamestartRecord etc used to go here
-        .skip(8) // More stuff that happens before the next list of players
+        .skip(12)
         .array('extraPlayerList', {
-        type: new binary_parser_1()
-            .int8('preVars1')
-            .buffer('pre', { length: 2 })
-            .int8('playerId')
-            .skip(1)
-            .int8('nameLength')
-            .string('playerName', { length: 'nameLength' })
-            .skip(1)
-            .int8('clanLength')
-            .string('clan', { length: 'clanLength' })
-            .skip(1)
-            .int8('extraLength')
-            .buffer('extra', { length: 'extraLength' })
-            .buffer('post', { length: buildNo >= 6103 ? 4 : 2 }),
+        type: version >= 10033 ? extraPlayerList133 : buildNo >= 6103 ? extraPlayerList6103 : extraPlayerList6102,
         readUntil: function (item, buffer) {
             // @ts-ignore
             var next = buffer.readInt8();
@@ -4951,8 +4986,8 @@
     var GameDataParserComposed = new binary_parser_1()
         .nest('meta', { type: GameMetaData })
         .nest('blocks', { type: GameDataParser });
-    var GameDataReforgedParserComposed = function (buildNo) { return new binary_parser_1()
-        .nest('meta', { type: GameMetaDataReforged(buildNo) })
+    var GameDataReforgedParserComposed = function (buildNo, version) { return new binary_parser_1()
+        .nest('meta', { type: GameMetaDataReforged(buildNo, version) })
         .nest('blocks', { type: GameDataParser }); };
     var EventEmitter = require('events');
     var ReplayParser = /** @class */ (function (_super) {
@@ -4987,7 +5022,7 @@
             });
             this.decompressed = Buffer.concat(decompressed);
             this.gameMetaDataDecoded = this.header.buildNo >= 6102
-                ? GameDataReforgedParserComposed(this.header.buildNo).parse(this.decompressed)
+                ? GameDataReforgedParserComposed(this.header.buildNo, this.header.version).parse(this.decompressed)
                 : GameDataParserComposed.parse(this.decompressed);
             var decodedMetaStringBuffer = this.decodeGameMetaString(this.gameMetaDataDecoded.meta.encodedString);
             var meta = __assign(__assign(__assign({}, this.gameMetaDataDecoded), this.gameMetaDataDecoded.meta), EncodedMapMetaString.parse(decodedMetaStringBuffer));
