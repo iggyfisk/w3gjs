@@ -4830,6 +4830,31 @@ var extraPlayerList133 = new binary_parser_1() // changes from 1.33 PTR
     .string('raceName', { length: 'raceLength' }) // this is new
     .skip(1)
     .skip(8); // there might be something good in here...ladder rank?
+var extraPlayerList20 = new binary_parser_1() // changes from 2.0
+    .int8('preVars1')
+    .buffer('pre', { length: 2 })
+    .int8('playerId')
+    .skip(1)
+    .int8('nameLength')
+    .string('playerName', { length: 'nameLength' })
+    .skip(1)
+    .int8('clanLength')
+    .string('clan', { length: 'clanLength' })
+    .skip(1)
+    .int8('extraLength')
+    .buffer('extra', { length: 'extraLength' })
+    .buffer('post', { length: 3 })
+    .int8('raceLength')
+    .string('raceName', { length: 'raceLength' })
+    .skip(8) // This is mostly 57, 0 , 0....
+    .int8('suffixType') // 64 or 0 are the only known values so far, seems to determine if the next section is 2 or 3 bytes
+    .choice('suffix', {
+    tag: 'suffixType',
+    choices: {
+        0: new binary_parser_1().skip(2),
+        64: new binary_parser_1().skip(3)
+    }
+}); // This section is new in 2.0 and varies in length, contents unknown. All known values start with 64
 var GameMetaDataReforged = function (buildNo, version) { return new binary_parser_1()
     .skip(5)
     .nest('player', { type: HostRecord })
@@ -4858,7 +4883,7 @@ var GameMetaDataReforged = function (buildNo, version) { return new binary_parse
 })
     .skip(12)
     .array('extraPlayerList', {
-    type: version >= 10033 ? extraPlayerList133 : buildNo >= 6103 ? extraPlayerList6103 : extraPlayerList6102,
+    type: version >= 10100 ? extraPlayerList20 : version >= 10033 ? extraPlayerList133 : buildNo >= 6103 ? extraPlayerList6103 : extraPlayerList6102,
     readUntil: function (item, buffer) {
         // @ts-ignore
         var next = buffer.readInt8();
